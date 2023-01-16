@@ -131,7 +131,7 @@ def Plateau(plan):
         [objet, ligne, colonne] = lig.split(";")
         pos = (int(ligne), int(colonne))
         poser_objet(plateau, objet, pos)
-
+    print(plateau)
     return plateau
 
 
@@ -220,14 +220,7 @@ def deplacer_joueur(plateau, joueur, pos, direction):
             return False
         return True
 
-    if direction == 'N':
-        pos = (pos[0]-1, pos[1])
-    elif direction == 'S':
-        pos = (pos[0]+1, pos[1])
-    elif direction == 'E':
-        pos = (pos[0], pos[1]+1)
-    elif direction == 'O':
-        pos = (pos[0], pos[1]-1)
+    pos = (pos[0]+INC_DIRECTION[direction][0], pos[1]+INC_DIRECTION[direction][1])
 
     if case.est_mur(plateau["cases"][pos]) or not est_sur_plateau(plateau, pos):
         return False
