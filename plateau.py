@@ -279,7 +279,35 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
     Returns:
         int: le nombre de joueurs à portée de peinture (ou qui risque de nous peindre)
     """
-    ...
+    counter = 0
+    if direction == "N":
+        for i in range(distance_max):
+            if not case.est_mur((pos[0]-1*(i+1),pos[1])) and not Stop:
+                if (pos[0]-1*(i+1),pos[1]) not in case.get_joueurs(pos[0]-1*(i+1),pos[1]):
+                    counter += 1
+            else:
+                Stop = True
+    elif direction == "S":
+        for i in range(distance_max):
+            if not case.est_mur((pos[0]+1*(i+1),pos[1])) and not Stop:
+                if (pos[0]+1*(i+1),pos[1]) not in case.get_joueurs(pos[0]+1*(i+1),pos[1]):
+                    counter += 1
+            else:
+                Stop = True
+    elif direction == "E":
+        for i in range(distance_max):
+            if not case.est_mur((pos[0],pos[1]+1*(i+1))) and not Stop:
+                if (pos[0],pos[1]+1*(i+1)) not in case.get_joueurs(pos[0],pos[1]+1*(i+1)):
+                    counter += 1
+            else:
+                Stop = True
+    elif direction == "O":
+        for i in range(distance_max):
+            if not case.est_mur((pos[0],pos[1]-1*(i+1))) and not Stop:
+                if (pos[0],pos[1]-1*(i+1)) not in case.get_joueurs(pos[0],pos[1]-1*(i+1)):
+                    counter += 1
+            else:
+                Stop = True
 
     
 def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_murs=False):

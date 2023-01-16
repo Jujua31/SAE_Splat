@@ -74,7 +74,7 @@ def get_joueurs(case):
         case (dict): la case considérée
 
     Returns:
-        set: l'ensemble des identifiants de joueurs présents su la case.
+        set: l'ensemble des identifiants de joueurs présents sur la case.
     """
     return case["joueurs_presents"]
 
