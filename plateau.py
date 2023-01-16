@@ -44,7 +44,7 @@ def get_case(plateau, pos):
     Returns:
         dict: La case qui se situe à la position pos du plateau
     """
-    ...
+    return plateau["cases"][pos]
 
 def poser_joueur(plateau, joueur, pos):
     """pose un joueur en position pos sur le plateau
@@ -54,7 +54,8 @@ def poser_joueur(plateau, joueur, pos):
         joueur (str): la lettre représentant le joueur
         pos (tuple): une paire (lig,col) de deux int
     """
-    ...
+    plateau["cases"][pos] = plateau["cases"][pos]
+    return plateau
 
 def poser_objet(plateau, objet, pos):
     """Pose un objet en position pos sur le plateau. Si cette case contenait déjà
@@ -104,7 +105,22 @@ def Plateau(plan):
     plateau["cases"] = {}
     for lig in range(nb_lignes):
         for col in range(nb_colonnes):
-            plateau["cases"][(lig, col)] = case.Case(les_lignes[lig + 1][col])
+            #print(les_lignes[lig+1][col])
+            if les_lignes[lig + 1][col] == '#':
+                plateau["cases"][(lig, col)] = case.Case(True,)
+            elif les_lignes[lig + 1][col] == ' ':
+                plateau["cases"][(lig, col)] = case.Case(False, ' ')
+            else:
+                if not les_lignes[lig + 1][col].isupper():
+                    plateau["cases"][(lig, col)] = case.Case(True, les_lignes[lig + 1][col])
+                else:
+                    plateau["cases"][(lig, col)] = case.Case(False, les_lignes[lig + 1][col])
+    for lig in les_lignes[nb_lignes+2:(nb_lignes+int(les_lignes[nb_lignes+1])+2)]:
+        print(lig)
+        [joueur, ligne, colonne] = lig.split(";")
+
+        pos = (int(ligne), int(colonne))
+        poser_joueur(plateau, joueur, pos)
     return plateau
 
 
