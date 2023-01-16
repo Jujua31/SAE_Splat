@@ -204,7 +204,13 @@ def deplacer_joueur(plateau, joueur, pos, direction):
             - une paire (lig,col) indiquant la position d'arrivée du joueur (None si
                 le joueur n'a pas pu se déplacer)
     """
-    def est_sur_plateau(plateau, pos):
+
+    pos = (pos[0]+INC_DIRECTION[direction][0], pos[1]+INC_DIRECTION[direction][1])
+
+    if case.est_mur(plateau["cases"][pos]) or not est_sur_plateau(plateau, pos):
+        return False
+
+def est_sur_plateau(plateau, pos):
         """Indique si une position est sur le plateau
 
         Args:
@@ -219,13 +225,6 @@ def deplacer_joueur(plateau, joueur, pos, direction):
         if pos[1] < 0 or pos[1] >= plateau["nb_colonnes"]:
             return False
         return True
-
-    pos = (pos[0]+INC_DIRECTION[direction][0], pos[1]+INC_DIRECTION[direction][1])
-
-    if case.est_mur(plateau["cases"][pos]) or not est_sur_plateau(plateau, pos):
-        return False
-
-
 
 #-----------------------------
 # fonctions d'observation du plateau
@@ -270,10 +269,11 @@ def directions_possibles(plateau,pos):
               à partir de pos
     """
     res = dict()
-    Positions = {"S": (pos[0]+1,pos[1]), "E": (pos[0],pos[1]+1), "N": (pos[0]-1,pos[1]), "O":(pos[0]+1,pos[1])}
-    for (direction, poses) in Positions.items:
-        if not case.est_mur(poses):
-            res[direction] = plateau["cases"][poses]["couleur"]
+    Positions = {"S": (pos[0]+1,pos[1]), "E": (pos[0],pos[1]+1), "N": (pos[0]-1,pos[1]), "O":(pos[0],pos[1]-1)}
+    for (direction, poses) in Positions.items():
+        if est_sur_plateau(plateau,poses):
+            if not plateau["cases"][poses]["mur"]:
+                res[direction] = plateau["cases"][poses]["couleur"]
     return res
     
 def nb_joueurs_direction(plateau, pos, direction, distance_max):
