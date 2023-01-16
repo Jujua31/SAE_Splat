@@ -82,7 +82,7 @@ def plateau_from_str(la_chaine):
     Returns:
         dict: le plateau correspondant à la chaine. None si l'opération a échoué
     """
-
+    ...
 
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
