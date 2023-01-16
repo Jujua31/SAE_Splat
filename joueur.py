@@ -18,7 +18,7 @@ def Joueur(couleur, nom, reserve, surface, position, objet, duree_objet):
     Returns:
         dict: un dictionnaire représentant le joueur
     """
-    joueur_dict = {'couleur':couleur,'nom':nom,'reserve':reserve,'surface':surface,'position':position,'objet':objet,'duree_objet':duree_objet}
+    joueur_dict = {'couleur':couleur,'nom_joueur':nom,'reserve':reserve,'surface':surface,'position':position,'objet':objet,'duree_objet':duree_objet}
     return joueur_dict
    
     
@@ -36,7 +36,9 @@ def joueur_from_str(description):
     Returns:
         dict: le joueur ayant les caractéristiques décrite dans la chaine.
     """
-    ...
+    liste = description.split(";")
+    res = {"couleur": liste[0], "reserve": int(liste[1]), "surface": int(liste[2]), "objet": int(liste[3]),"duree_objet": int(liste[4]),"position": (int(liste[5]),int(liste[6])),"nom_joueur": liste[7]}
+    return res
 
 def get_couleur(joueur):
     """retourne la couleur du joueur
@@ -59,7 +61,7 @@ def get_nom(joueur):
     Returns:
         str: le nom du joueur
     """
-    return joueur['nom']
+    return joueur['nom_joueur']
 
 
 def get_reserve(joueur):
@@ -101,7 +103,7 @@ def get_duree(joueur):
     Returns:
         int: un entier indiquant la durée de vie l'objet possédé par le joueur
     """
-    return joueur['duree']
+    return joueur['duree_objet']
 
     
 def get_pos(joueur):
