@@ -391,5 +391,5 @@ def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_mur
                 reserve -= 1
         if reserve == 0:
             return res
-
+    print(res)
     return res
