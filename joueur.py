@@ -162,14 +162,12 @@ def ajouter_objet(joueur, objet, duree):
         objet (int): l'objet considéré
         duree (int): la durée de vie de l'objet
     """
-    reserve = get_reserve(joueur)
-    duree = get_duree(joueur)
-    if joueur['objet'] == const.BIDON:
-        if reserve < 0:
-            reserve = 0
-        
-    joueur['objet'] = objet
-    joueur['duree_objet'] = duree
+    if objet == const.BIDON:
+        if get_reserve(joueur) < 0:
+            joueur["reserve"] = 0
+    else:
+        joueur['objet'] = objet
+        joueur['duree_objet'] = duree
 
     
 def maj_duree(joueur):
