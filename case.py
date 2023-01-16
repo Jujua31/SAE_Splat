@@ -53,8 +53,7 @@ def get_couleur(case):
     Returns:
         str: l'identifiant du joueur qui a peint la case ou la chaine vide
     """
-    ...
-
+    return case["couleur"]
 
 
 def get_objet(case):
@@ -66,9 +65,7 @@ def get_objet(case):
     Returns:
         int: l'identifiant de l'objet qui se trouve sur la case.
     """
-    ...
-
-
+    return case["objet"]
 
 def get_joueurs(case):
     """retourne l'ensemble des joueurs qui sont sur la case
