@@ -128,7 +128,7 @@ def set_pos(joueur, pos):
 
 def modifie_reserve(joueur, quantite):
     """ modifie la réserve du joueur.
-        ATTENTION! La quantité peut être négative et le réserve peut devenir négative
+        ATTENTION! La quantité peut être négative et la réserve peut devenir négative
 
     Args:
         joueur (dict): le joueur considéré
