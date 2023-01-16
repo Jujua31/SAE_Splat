@@ -93,7 +93,7 @@ def get_nb_joueurs(case):
 
 def peindre(case, couleur):
     """Affecte la couleur passée en paramètre à la case et retourne la liste des
-        joueurs présents sur la carte.
+        joueurs présents sur la case.
 
     Args:
         case (dict): la case considérée. On considère que cette case n'est pas un mur.
