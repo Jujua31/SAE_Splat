@@ -180,4 +180,3 @@ def maj_duree(joueur):
         joueur (dict): le joueur considéré
     """
     ...
-    
