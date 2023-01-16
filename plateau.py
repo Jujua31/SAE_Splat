@@ -266,16 +266,21 @@ def surfaces_peintes(plateau, nb_joueurs):
             valeurs le nombre de cases peintes par le joueur
     """
     cases_peintes = dict()
-    nb = 0
-    while nb < nb_joueurs:
-        for (_, valeurs) in plateau.items():
-            for valeurs in plateau[plateau['cases']].items():
-                if plateau[plateau['cases']]['couleur'] not in cases_peintes.keys() and plateau[plateau['cases']][
-                    'couleur'] != ' ':
-                    cases_peintes[plateau[plateau['cases']]['couleur']] += 1
-                else:
-                    cases_peintes[plateau[plateau['cases']]['couleur']] = 1
-                nb += 1
+    joueurs = set()
+
+    for cases in plateau['cases'].values():
+        if cases['couleur'] in cases_peintes.keys():
+            cases_peintes[cases['couleur']] += 1
+        elif cases['couleur'] != ' ':
+            cases_peintes[cases['couleur']] = 1
+
+        for joueur in case.get_joueurs(cases):
+            joueurs.add(joueur)
+
+    if nb_joueurs != len(cases_peintes.keys()):
+        for joueur in joueurs:
+            if joueur not in cases_peintes.keys():
+                cases_peintes[joueur] = 0
 
     return cases_peintes
 
@@ -314,35 +319,14 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
     Returns:
         int: le nombre de joueurs à portée de peinture (ou qui risque de nous peindre)
     """
-    counter = 0
-    if direction == "N":
-        for i in range(distance_max):
-            if not case.est_mur((pos[0] - 1 * (i + 1), pos[1])) and not Stop:
-                if (pos[0] - 1 * (i + 1), pos[1]) not in case.get_joueurs(pos[0] - 1 * (i + 1), pos[1]):
-                    counter += 1
-            else:
-                Stop = True
-    elif direction == "S":
-        for i in range(distance_max):
-            if not case.est_mur((pos[0] + 1 * (i + 1), pos[1])) and not Stop:
-                if (pos[0] + 1 * (i + 1), pos[1]) not in case.get_joueurs(pos[0] + 1 * (i + 1), pos[1]):
-                    counter += 1
-            else:
-                Stop = True
-    elif direction == "E":
-        for i in range(distance_max):
-            if not case.est_mur((pos[0], pos[1] + 1 * (i + 1))) and not Stop:
-                if (pos[0], pos[1] + 1 * (i + 1)) not in case.get_joueurs(pos[0], pos[1] + 1 * (i + 1)):
-                    counter += 1
-            else:
-                Stop = True
-    elif direction == "O":
-        for i in range(distance_max):
-            if not case.est_mur((pos[0], pos[1] - 1 * (i + 1))) and not Stop:
-                if (pos[0], pos[1] - 1 * (i + 1)) not in case.get_joueurs(pos[0], pos[1] - 1 * (i + 1)):
-                    counter += 1
-            else:
-                Stop = True
+    res = 0
+    Positions = {"N": [0,-1],"S": [0,1],"E": [1,1],"O": [1,-1]}
+    for _ in range(distance_max):
+        pos[Positions][direction][0] += Positions[direction][1]
+        if not plateau["cases"][pos]["mur"]:
+            if len(plateau["cases"][pos]["joueurs_presents"]) >= 1:
+                res += len(plateau["cases"][pos]["joueurs_presents"])
+    return res
 
 
 def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_murs=False):
