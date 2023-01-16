@@ -292,8 +292,13 @@ def directions_possibles(plateau, pos):
               de la case d'arrivée si on prend cette direction
               à partir de pos
     """
-    ...
-
+    res = dict()
+    Positions = {"S": (pos[0]+1,pos[1]), "E": (pos[0],pos[1]+1), "N": (pos[0]-1,pos[1]), "O":(pos[0]+1,pos[1])}
+    for (direction, poses) in Positions.items:
+        if not case.est_mur(poses):
+            res[direction] = plateau["cases"][poses]["couleur"]
+    return res
+    
 
 def nb_joueurs_direction(plateau, pos, direction, distance_max):
     """indique combien de joueurs se trouve à portée sans protection de mur.
