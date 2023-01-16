@@ -54,7 +54,7 @@ def poser_joueur(plateau, joueur, pos):
         joueur (str): la lettre représentant le joueur
         pos (tuple): une paire (lig,col) de deux int
     """
-    plateau["cases"][pos] = plateau["cases"][pos]
+    plateau["cases"][pos]["joueurs_presents"] = joueur
     return plateau
 
 def poser_objet(plateau, objet, pos):
@@ -66,7 +66,8 @@ def poser_objet(plateau, objet, pos):
         objet (int): un entier représentant l'objet. const.AUCUN indique aucun objet
         pos (tuple): une paire (lig,col) de deux int
     """
-    ...
+    plateau["cases"][pos]["objet"] = int(objet)
+    return plateau
 
 def plateau_from_str(la_chaine):
     """Construit un plateau à partir d'une chaine de caractère contenant les informations
@@ -107,7 +108,7 @@ def Plateau(plan):
         for col in range(nb_colonnes):
             #print(les_lignes[lig+1][col])
             if les_lignes[lig + 1][col] == '#':
-                plateau["cases"][(lig, col)] = case.Case(True,)
+                plateau["cases"][(lig, col)] = case.Case(True, ' ')
             elif les_lignes[lig + 1][col] == ' ':
                 plateau["cases"][(lig, col)] = case.Case(False, ' ')
             else:
@@ -115,12 +116,22 @@ def Plateau(plan):
                     plateau["cases"][(lig, col)] = case.Case(True, les_lignes[lig + 1][col])
                 else:
                     plateau["cases"][(lig, col)] = case.Case(False, les_lignes[lig + 1][col])
-    for lig in les_lignes[nb_lignes+2:(nb_lignes+int(les_lignes[nb_lignes+1])+2)]:
-        print(lig)
-        [joueur, ligne, colonne] = lig.split(";")
 
+    debut_def_joueur = nb_lignes + 2
+    fin_def_joueur = nb_lignes+int(les_lignes[nb_lignes+1])+2
+    for lig in les_lignes[debut_def_joueur:fin_def_joueur]:
+        [joueur, ligne, colonne] = lig.split(";")
         pos = (int(ligne), int(colonne))
         poser_joueur(plateau, joueur, pos)
+
+    debut_def_objet = fin_def_joueur + 1
+    fin_def_objet = fin_def_joueur + int(les_lignes[fin_def_joueur]) + 1
+    for lig in les_lignes[debut_def_objet:fin_def_objet]:
+        [objet, ligne, colonne] = lig.split(";")
+        pos = (int(ligne), int(colonne))
+        poser_objet(plateau, objet, pos)
+
+    print(plateau["cases"][0,2])
     return plateau
 
 

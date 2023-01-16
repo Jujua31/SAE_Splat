@@ -6,8 +6,8 @@ class test_case(unittest.TestCase):
     def setUp(self):
         with open("plans/plan1.txt") as fic:
             self.plan1=fic.read()
-        with open("plans/plan2.txt") as fic:
-            self.plan1=fic.read()
+        with open("plans/plan2.txt") as fic2:
+            self.plan2=fic2.read()
     
     def verif(self,plan,le_plateau):
         les_lignes=plan.split("\n")
@@ -82,7 +82,7 @@ class test_case(unittest.TestCase):
             objo=case.get_objet(plateau.get_case(le_plateau,(lin,col)))
             if objo != obj:
                 return "La case "+str(lin)+","+str(col)+\
-                            " devrait contenir l'objet "+obj+\
+                            " devrait contenir l'objet "+str(obj)+\
                             " alors qu'elle contient l'objet "+\
                             str(objo)
         return None
