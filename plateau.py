@@ -325,4 +325,3 @@ def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_mur
                 "joueurs_touches": un ensemble (set) indiquant les joueurs touchés lors de l'action
     """
     ...
-
