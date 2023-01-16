@@ -18,7 +18,13 @@ def Joueur(couleur, nom, reserve, surface, position, objet, duree_objet):
     Returns:
         dict: un dictionnaire représentant le joueur
     """
-    ...
+    joueur_dict = dict()
+    joueur_dict['couleur'] = couleur
+    joueur_dict['nom'] = nom
+    joueur_dict['reserve'] = reserve
+    joueur_dict['surface'] = surface
+    joueur_dict['poistion'] = position
+    
 
     
 def joueur_from_str(description):
