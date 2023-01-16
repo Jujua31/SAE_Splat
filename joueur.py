@@ -139,8 +139,8 @@ def modifie_reserve(joueur, quantite):
     Returns:
         int: la nouvelle valeur de la réserve
     """
-    joueur['reserve'] = quantite
-    return
+    joueur['reserve'] += quantite
+    return joueur['reserve']
 
 def set_surface(joueur, surface):
     """met à jour la surface du joueur
