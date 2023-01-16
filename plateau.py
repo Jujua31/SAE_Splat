@@ -1,9 +1,6 @@
-"""module de gestion du plateau de jeu
-"""
 import const
 import case
 import joueur
-
 
 # dictionnaire permettant d'associer une direction et la position relative
 # de la case qui se trouve dans cette direction
@@ -83,7 +80,24 @@ def plateau_from_str(la_chaine):
     Returns:
         dict: le plateau correspondant à la chaine. None si l'opération a échoué
     """
-    ...
+    plateau = {}
+
+    les_lignes = la_chaine.split("\n")
+    [nb_lignes, nb_colonnes] = les_lignes[0].split(";")
+    nb_lignes = int(nb_lignes)
+    nb_colonnes = int(nb_colonnes)
+    plateau["nb_lignes"] = nb_lignes
+    plateau["nb_colonnes"] = nb_colonnes
+    plateau["cases"] = {}
+    for lig in range(nb_lignes):
+        for col in range(nb_colonnes):
+            if les_lignes[lig + 1][col] == '#':
+                plateau["cases"][(lig, col)] = case.Case(True, ' ')
+            else:
+                plateau["cases"][(lig, col)] = case.Case(False, ' ')
+
+    return plateau
+
 
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
@@ -120,7 +134,7 @@ def Plateau(plan):
                     plateau["cases"][(lig, col)] = case.Case(False, les_lignes[lig + 1][col])
 
     debut_def_joueur = nb_lignes + 2
-    fin_def_joueur = nb_lignes+int(les_lignes[nb_lignes+1])+2
+    fin_def_joueur = nb_lignes + int(les_lignes[nb_lignes + 1]) + 2
     for lig in les_lignes[debut_def_joueur:fin_def_joueur]:
         [joueur, ligne, colonne] = lig.split(";")
         pos = (int(ligne), int(colonne))
@@ -132,7 +146,6 @@ def Plateau(plan):
         [objet, ligne, colonne] = lig.split(";")
         pos = (int(ligne), int(colonne))
         poser_objet(plateau, objet, pos)
-
     return plateau
 
 
@@ -160,7 +173,7 @@ def enlever_joueur(plateau, joueur, pos):
         bool: True si l'opération s'est bien déroulée, False sinon
     """
     if plateau["cases"][pos]["joueurs_presents"] == joueur:
-        plateau["cases"][pos]["joueurs_presents"] = None
+        plateau["cases"][pos]["joueurs_presents"] = set()
         return True
     else:
         return False
@@ -205,32 +218,41 @@ def deplacer_joueur(plateau, joueur, pos, direction):
             - une paire (lig,col) indiquant la position d'arrivée du joueur (None si
                 le joueur n'a pas pu se déplacer)
     """
-    def est_sur_plateau(plateau, pos):
-        """Indique si une position est sur le plateau
 
-        Args:
-            plateau (dict): le plateau considéré
-            pos (tuple): une paire (lig,col) de deux int
+    pos2 = (pos[0] + INC_DIRECTION[direction][0], pos[1] + INC_DIRECTION[direction][1])
+    if case.est_mur(plateau["cases"][pos2]) or not est_sur_plateau(plateau, pos2):
+        return False, 0, const.AUCUN, None
+    if case.get_joueurs(plateau["cases"][pos]) == set():
+        return False, 0, const.AUCUN, None
+    enlever_joueur(plateau, joueur, pos)
+    poser_joueur(plateau, joueur, pos2)
+    if case.get_couleur(plateau["cases"][pos2]) == joueur:
+        return True, 1, prendre_objet(plateau, pos2), pos2
+    if case.get_couleur(plateau["cases"][pos2]) == ' ':
+        return True, 0, prendre_objet(plateau, pos2), pos2
+    return True, -1, prendre_objet(plateau, pos2), pos2
 
-        Returns:
-            bool: True si la position est sur le plateau, False sinon
-        """
-        if pos[0] < 0 or pos[0] >= plateau["nb_lignes"]:
-            return False
-        if pos[1] < 0 or pos[1] >= plateau["nb_colonnes"]:
-            return False
-        return True
 
-    pos = (pos[0]+INC_DIRECTION[direction][0], pos[1]+INC_DIRECTION[direction][1])
+def est_sur_plateau(plateau, pos):
+    """Indique si une position est sur le plateau
 
-    if case.est_mur(plateau["cases"][pos]) or not est_sur_plateau(plateau, pos):
+    Args:
+        plateau (dict): le plateau considéré
+        pos (tuple): une paire (lig,col) de deux int
+
+    Returns:
+        bool: True si la position est sur le plateau, False sinon
+    """
+    if pos[0] < 0 or pos[0] >= plateau["nb_lignes"]:
         return False
+    if pos[1] < 0 or pos[1] >= plateau["nb_colonnes"]:
+        return False
+    return True
 
 
-
-#-----------------------------
+# -----------------------------
 # fonctions d'observation du plateau
-#-----------------------------
+# -----------------------------
 
 def surfaces_peintes(plateau, nb_joueurs):
     """retourne un dictionnaire indiquant le nombre de cases peintes pour chaque joueur.
@@ -244,41 +266,43 @@ def surfaces_peintes(plateau, nb_joueurs):
             valeurs le nombre de cases peintes par le joueur
     """
     cases_peintes = dict()
-    joueurs = set()
+    nb = 0
+    while nb < nb_joueurs:
+        for (_, valeurs) in plateau.items():
+            for valeurs in plateau[plateau['cases']].items():
+                if plateau[plateau['cases']]['couleur'] not in cases_peintes.keys() and plateau[plateau['cases']][
+                    'couleur'] != ' ':
+                    cases_peintes[plateau[plateau['cases']]['couleur']] += 1
+                else:
+                    cases_peintes[plateau[plateau['cases']]['couleur']] = 1
+                nb += 1
 
-    for cases in plateau['cases'].values():
-        if cases['couleur'] in cases_peintes.keys():
-            cases_peintes[cases['couleur']] += 1
-        elif cases['couleur'] != ' ':
-            cases_peintes[cases['couleur']] = 1    
-            
-        for joueur in case.get_joueurs(cases):
-            joueurs.add(joueur)
+    return cases_peintes
 
-    if nb_joueurs != len(cases_peintes.keys()):
-        for joueur in joueurs:
-            if joueur not in cases_peintes.keys():
-                cases_peintes[joueur] = 0        
-        
-    return cases_peintes                
 
-    
-def directions_possibles(plateau,pos):
+def directions_possibles(plateau, pos):
     """ retourne les directions vers où il est possible de se déplacer à partir
         de la position pos
 
     Args:
         plateau (dict): le plateau considéré
         pos (tuple): un couple d'entiers (ligne,colonne) indiquant la position de départ
-    
+
     Returns:
         dict: un dictionnaire dont les clés sont les directions possibles et les valeurs la couleur
               de la case d'arrivée si on prend cette direction
               à partir de pos
     """
-    ...
+    res = dict()
+    Positions = {"S": (pos[0] + 1, pos[1]), "E": (pos[0], pos[1] + 1), "N": (pos[0] - 1, pos[1]),
+                 "O": (pos[0], pos[1] - 1)}
+    for (direction, poses) in Positions.items():
+        if est_sur_plateau(plateau, poses):
+            if not plateau["cases"][poses]["mur"]:
+                res[direction] = plateau["cases"][poses]["couleur"]
+    return res
 
-    
+
 def nb_joueurs_direction(plateau, pos, direction, distance_max):
     """indique combien de joueurs se trouve à portée sans protection de mur.
         Attention! il faut compter les joueurs qui sont sur la case pos
@@ -293,34 +317,34 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
     counter = 0
     if direction == "N":
         for i in range(distance_max):
-            if not case.est_mur((pos[0]-1*(i+1),pos[1])) and not Stop:
-                if (pos[0]-1*(i+1),pos[1]) not in case.get_joueurs(pos[0]-1*(i+1),pos[1]):
+            if not case.est_mur((pos[0] - 1 * (i + 1), pos[1])) and not Stop:
+                if (pos[0] - 1 * (i + 1), pos[1]) not in case.get_joueurs(pos[0] - 1 * (i + 1), pos[1]):
                     counter += 1
             else:
                 Stop = True
     elif direction == "S":
         for i in range(distance_max):
-            if not case.est_mur((pos[0]+1*(i+1),pos[1])) and not Stop:
-                if (pos[0]+1*(i+1),pos[1]) not in case.get_joueurs(pos[0]+1*(i+1),pos[1]):
+            if not case.est_mur((pos[0] + 1 * (i + 1), pos[1])) and not Stop:
+                if (pos[0] + 1 * (i + 1), pos[1]) not in case.get_joueurs(pos[0] + 1 * (i + 1), pos[1]):
                     counter += 1
             else:
                 Stop = True
     elif direction == "E":
         for i in range(distance_max):
-            if not case.est_mur((pos[0],pos[1]+1*(i+1))) and not Stop:
-                if (pos[0],pos[1]+1*(i+1)) not in case.get_joueurs(pos[0],pos[1]+1*(i+1)):
+            if not case.est_mur((pos[0], pos[1] + 1 * (i + 1))) and not Stop:
+                if (pos[0], pos[1] + 1 * (i + 1)) not in case.get_joueurs(pos[0], pos[1] + 1 * (i + 1)):
                     counter += 1
             else:
                 Stop = True
     elif direction == "O":
         for i in range(distance_max):
-            if not case.est_mur((pos[0],pos[1]-1*(i+1))) and not Stop:
-                if (pos[0],pos[1]-1*(i+1)) not in case.get_joueurs(pos[0],pos[1]-1*(i+1)):
+            if not case.est_mur((pos[0], pos[1] - 1 * (i + 1))) and not Stop:
+                if (pos[0], pos[1] - 1 * (i + 1)) not in case.get_joueurs(pos[0], pos[1] - 1 * (i + 1)):
                     counter += 1
             else:
                 Stop = True
 
-    
+
 def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_murs=False):
     """ Peint avec la couleur les cases du plateau à partir de la position pos dans
         la direction indiquée en s'arrêtant au premier mur ou au bord du plateau ou
@@ -342,6 +366,7 @@ def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_mur
                 "nb_murs_repeints": un entier indiquant le nombre de murs qui ont changé de couleur
                 "joueurs_touches": un ensemble (set) indiquant les joueurs touchés lors de l'action
     """
+
     res = dict()
     res["cout"] = 0
     res["nb_repeintes"] = 0
@@ -384,4 +409,3 @@ def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_mur
             return res
 
     return res
-
