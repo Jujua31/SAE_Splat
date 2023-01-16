@@ -46,6 +46,7 @@ def get_case(plateau, pos):
     """
     return plateau["cases"][pos]
 
+
 def poser_joueur(plateau, joueur, pos):
     """pose un joueur en position pos sur le plateau
 
@@ -56,6 +57,7 @@ def poser_joueur(plateau, joueur, pos):
     """
     plateau["cases"][pos]["joueurs_presents"] = joueur
     return plateau
+
 
 def poser_objet(plateau, objet, pos):
     """Pose un objet en position pos sur le plateau. Si cette case contenait déjà
@@ -69,6 +71,7 @@ def poser_objet(plateau, objet, pos):
     plateau["cases"][pos]["objet"] = int(objet)
     return plateau
 
+
 def plateau_from_str(la_chaine):
     """Construit un plateau à partir d'une chaine de caractère contenant les informations
         sur le contenu du plateau (voir sujet)
@@ -80,7 +83,6 @@ def plateau_from_str(la_chaine):
         dict: le plateau correspondant à la chaine. None si l'opération a échoué
     """
 
-    
 
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
@@ -106,7 +108,6 @@ def Plateau(plan):
     plateau["cases"] = {}
     for lig in range(nb_lignes):
         for col in range(nb_colonnes):
-            #print(les_lignes[lig+1][col])
             if les_lignes[lig + 1][col] == '#':
                 plateau["cases"][(lig, col)] = case.Case(True, ' ')
             elif les_lignes[lig + 1][col] == ' ':
@@ -131,7 +132,6 @@ def Plateau(plan):
         pos = (int(ligne), int(colonne))
         poser_objet(plateau, objet, pos)
 
-    print(plateau["cases"][0,2])
     return plateau
 
 
@@ -143,9 +143,8 @@ def set_case(plateau, pos, une_case):
         pos (tuple): une paire (lig,col) de deux int
         une_case (dict): la nouvelle case
     """
-    ...
-
-
+    plateau["cases"][pos] = une_case
+    return plateau
 
 
 def enlever_joueur(plateau, joueur, pos):
@@ -159,9 +158,11 @@ def enlever_joueur(plateau, joueur, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    ...
-
-
+    if plateau["cases"][pos]["joueurs_presents"] == joueur:
+        plateau["cases"][pos]["joueurs_presents"] = None
+        return True
+    else:
+        return False
 
 
 def prendre_objet(plateau, pos):
@@ -176,7 +177,10 @@ def prendre_objet(plateau, pos):
         int: l'entier représentant l'objet qui se trouvait sur la case.
         const.AUCUN indique aucun objet
     """
-    ...
+    objet = plateau["cases"][pos]["objet"]
+    plateau["cases"][pos]["objet"] = const.AUCUN
+    return objet
+
 
 def deplacer_joueur(plateau, joueur, pos, direction):
     """Déplace dans la direction indiquée un joueur se trouvant en position pos
@@ -200,7 +204,34 @@ def deplacer_joueur(plateau, joueur, pos, direction):
             - une paire (lig,col) indiquant la position d'arrivée du joueur (None si
                 le joueur n'a pas pu se déplacer)
     """
-    ...
+    def est_sur_plateau(plateau, pos):
+        """Indique si une position est sur le plateau
+
+        Args:
+            plateau (dict): le plateau considéré
+            pos (tuple): une paire (lig,col) de deux int
+
+        Returns:
+            bool: True si la position est sur le plateau, False sinon
+        """
+        if pos[0] < 0 or pos[0] >= plateau["nb_lignes"]:
+            return False
+        if pos[1] < 0 or pos[1] >= plateau["nb_colonnes"]:
+            return False
+        return True
+
+    if direction == 'N':
+        pos = (pos[0]-1, pos[1])
+    elif direction == 'S':
+        pos = (pos[0]+1, pos[1])
+    elif direction == 'E':
+        pos = (pos[0], pos[1]+1)
+    elif direction == 'O':
+        pos = (pos[0], pos[1]-1)
+
+    if case.est_mur(plateau["cases"][pos]) or not est_sur_plateau(plateau, pos):
+        return False
+
 
 
 #-----------------------------
