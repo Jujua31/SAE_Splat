@@ -169,3 +169,4 @@ def prendre_joueur(case, joueur):
         return True
     else:
         return False
+    
