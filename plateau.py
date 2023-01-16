@@ -19,7 +19,7 @@ def get_nb_lignes(plateau):
     Returns:
         int: le nombre de lignes du plateau
     """
-    ...
+    return plateau["nb_lignes"]
 
 
 def get_nb_colonnes(plateau):
@@ -31,7 +31,7 @@ def get_nb_colonnes(plateau):
     Returns:
         int: le nombre de colonnes du plateau
     """
-    ...
+    return plateau["nb_colonnes"]
 
 
 def get_case(plateau, pos):
@@ -77,7 +77,7 @@ def plateau_from_str(la_chaine):
     Returns:
         dict: le plateau correspondant à la chaine. None si l'opération a échoué
     """
-    ...
+
     
 
 def Plateau(plan):
@@ -93,7 +93,19 @@ def Plateau(plan):
     Returns:
         dict: Le plateau correspondant au plan
     """
-    ...
+    plateau = {}
+
+    les_lignes = plan.split("\n")
+    [nb_lignes, nb_colonnes] = les_lignes[0].split(";")
+    nb_lignes = int(nb_lignes)
+    nb_colonnes = int(nb_colonnes)
+    plateau["nb_lignes"] = nb_lignes
+    plateau["nb_colonnes"] = nb_colonnes
+    plateau["cases"] = {}
+    for lig in range(nb_lignes):
+        for col in range(nb_colonnes):
+            plateau["cases"][(lig, col)] = case.Case(les_lignes[lig + 1][col])
+    return plateau
 
 
 def set_case(plateau, pos, une_case):
