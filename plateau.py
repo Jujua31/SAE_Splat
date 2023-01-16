@@ -243,16 +243,19 @@ def surfaces_peintes(plateau, nb_joueurs):
             valeurs le nombre de cases peintes par le joueur
     """
     cases_peintes = dict()
-    nb = 0
-    while nb < nb_joueurs:
-        for (_,valeurs) in plateau.items():
-            for valeurs in plateau[plateau['cases']].items():
-                if plateau[plateau['cases']]['couleur'] not in cases_peintes.keys() and plateau[plateau['cases']]['couleur']!= ' ':
-                    cases_peintes[plateau[plateau['cases']]['couleur']]+=1
-                else:
-                    cases_peintes[plateau[plateau['cases']]['couleur']] = 1
-                nb+=1    
+    joueurs = set()
+    for i in range(nb_joueurs):
+        cases_peintes[chr(i+65)] = 0
 
+    for cases in plateau['cases'].values():
+        if cases['couleur'] in cases_peintes.keys() and cases['couleur'] != ' ':
+            cases_peintes[cases['couleur']] += 1
+        else:
+            cases_peintes[cases['couleur']] = 1
+            
+        for joueur in case.get_joueurs(cases):
+            joueurs.add(joueur)
+        
     return cases_peintes                
 
     
