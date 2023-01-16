@@ -269,10 +269,10 @@ def surfaces_peintes(plateau, nb_joueurs):
     joueurs = set()
 
     for cases in plateau['cases'].values():
-        if cases['couleur'] in cases_peintes.keys():
-            cases_peintes[cases['couleur']] += 1
-        elif cases['couleur'] != ' ':
-            cases_peintes[cases['couleur']] = 1
+        if cases['couleur'].upper() in cases_peintes.keys():
+            cases_peintes[cases['couleur'].upper()] += 1
+        elif cases['couleur'].upper() != ' ':
+            cases_peintes[cases['couleur'].upper()] = 1
 
         for joueur in case.get_joueurs(cases):
             joueurs.add(joueur)
@@ -319,21 +319,26 @@ def nb_joueurs_direction(plateau, pos, direction, distance_max):
     Returns:
         int: le nombre de joueurs à portée de peinture (ou qui risque de nous peindre)
     """
-    res = 0
-    Positions = {"N": [0,-1],"S": [0,1],"E": [1,1],"O": [1,-1]}
-    for _ in range(distance_max):
-        pos[Positions][direction][0] += Positions[direction][1]
-        if not plateau["cases"][pos]["mur"]:
-            if len(plateau["cases"][pos]["joueurs_presents"]) >= 1:
-                res += len(plateau["cases"][pos]["joueurs_presents"])
-    return res
+    nb_joueurs = 0
+    pos2 = pos
+    for i in range(distance_max):
+        if not est_sur_plateau(plateau, pos2) or plateau["cases"][pos2]["mur"]:
+            return nb_joueurs
+        elif plateau["cases"][pos2]["joueurs_presents"] != set():
+            nb_joueurs += 1
+        pos2 = (pos2[0] + INC_DIRECTION[direction][0], pos2[1] + INC_DIRECTION[direction][1])
+    return nb_joueurs
 
 
 def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_murs=False):
     """ Peint avec la couleur les cases du plateau à partir de la position pos dans
         la direction indiquée en s'arrêtant au premier mur ou au bord du plateau ou
         lorsque que la distance maximum a été atteinte.
-
+    
+    for (cle,valeur) in cases_peintes.items():
+        if cle.upper in cases_peintes.keys():
+            cases_peintes[cle.upper] += valeur
+            cases_peintes.remove(cle)
     Args:
         plateau (dict): le plateau considéré
         pos (tuple): une paire (lig,col) de int
@@ -350,19 +355,24 @@ def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_mur
                 "nb_murs_repeints": un entier indiquant le nombre de murs qui ont changé de couleur
                 "joueurs_touches": un ensemble (set) indiquant les joueurs touchés lors de l'action
     """
-
     res = dict()
     res["cout"] = 0
     res["nb_repeintes"] = 0
     res["nb_murs_repeints"] = 0
     res["joueurs_touches"] = set()
+    peindre_case = pos
     for i in range(distance_max):
-        peindre_case = (pos[0] + INC_DIRECTION[direction][0], pos[1] + INC_DIRECTION[direction][1])
+
         if not est_sur_plateau(plateau, peindre_case):
             return res
+
+        if reserve == 0:
+            return res
+
         if case.est_mur(plateau["cases"][peindre_case]):
             if not peindre_murs:
                 return res
+
             elif peindre_murs and reserve > 0:
                 plateau["cases"][peindre_case]["couleur"] = couleur.lower()
                 res["nb_murs_repeints"] += 1
@@ -370,26 +380,48 @@ def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_mur
                 res["nb_repeintes"] += 1
                 reserve -= 1
                 return res
-        if case.get_joueurs(plateau["cases"][peindre_case]):
-            res["joueurs_touches"].add(plateau["cases"][peindre_case]["joueurs"])
-            if joueur.get_reserve(plateau["cases"][peindre_case]["joueurs"]) > 5:
-                joueur.modifie_reserve(plateau["cases"][peindre_case]["joueurs"], -5)
+
+        elif case.get_joueurs(plateau["cases"][peindre_case]):
+            res["joueurs_touches"].add(plateau["cases"][peindre_case]["joueurs_presents"])
+            # if joueur.get_reserve(plateau["cases"][peindre_case]["joueurs_presents"][0]) > 5:
+                # joueur.modifie_reserve(plateau["cases"][peindre_case]["joueurs"], -5)
+            if case.get_joueurs(plateau["cases"][peindre_case]) != couleur:
                 reserve += 5
+            # else
+                # reserve += joueur.get_reserve(plateau["cases"][peindre_case]["joueurs"])
+                # joueur.modifie_reserve(plateau["cases"][peindre_case]["joueurs"], -joueur.get_reserve(plateau["cases"][peindre_case]["joueurs"]))
+                if plateau["cases"][peindre_case]["couleur"] != couleur:
+                    res["nb_repeintes"] += 1
+                    res["cout"] += 2
+                    plateau["cases"][peindre_case]["couleur"] = couleur
+                    reserve -= 2
             else:
-                reserve += joueur.get_reserve(plateau["cases"][peindre_case]["joueurs"])
-                joueur.modifie_reserve(plateau["cases"][peindre_case]["joueurs"], -joueur.get_reserve(plateau["cases"][peindre_case]["joueurs"]))
+                res["nb_repeintes"] += 1
+                res["cout"] += 1
+                plateau["cases"][peindre_case]["couleur"] = couleur
+                reserve -= 1
+
+        elif plateau["cases"][peindre_case]["couleur"] != couleur:
             if plateau["cases"][peindre_case]["couleur"] != couleur:
                 res["nb_repeintes"] += 1
                 res["cout"] += 2
                 plateau["cases"][peindre_case]["couleur"] = couleur
                 reserve -= 2
-        else:
-            if plateau["cases"][peindre_case]["couleur"] != couleur:
+            else:
                 res["nb_repeintes"] += 1
                 res["cout"] += 1
                 plateau["cases"][peindre_case]["couleur"] = couleur
                 reserve -= 1
-        if reserve == 0:
-            return res
+        else:
+            if plateau["cases"][peindre_case]["couleur"] != couleur:
+                res["nb_repeintes"] += 1
+                res["cout"] += 2
+                plateau["cases"][peindre_case]["couleur"] = couleur
+                reserve -= 2
+
+
+        print(peindre_case, res)
+        print(plateau["cases"][peindre_case])
+        peindre_case = (peindre_case[0] + INC_DIRECTION[direction][0], peindre_case[0] + INC_DIRECTION[direction][1])
     print(res)
     return res
