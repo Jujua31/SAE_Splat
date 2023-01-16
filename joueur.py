@@ -177,4 +177,8 @@ def maj_duree(joueur):
     Args:
         joueur (dict): le joueur considéré
     """
-    ...
+    if joueur["duree_objet"] > 1:
+        joueur["duree_objet"] -= 1
+    else:
+        joueur["duree_objet"] = 0
+        joueur["objet"] = 0
