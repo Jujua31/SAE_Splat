@@ -360,68 +360,70 @@ def peindre(plateau, pos, direction, couleur, reserve, distance_max, peindre_mur
     res["nb_repeintes"] = 0
     res["nb_murs_repeints"] = 0
     res["joueurs_touches"] = set()
+    res["reserve"] = reserve
     peindre_case = pos
+
+    def essaye_couleur(plateau, peindre_case, couleur, mur=False):
+        if res["reserve"] < 0:
+            return
+        if mur:
+            res["nb_murs_repeints"] += 1
+
+        if plateau["cases"][peindre_case]["couleur"] == ' ':
+            res["nb_repeintes"] += 1
+            res["cout"] += 1
+            plateau["cases"][peindre_case]["couleur"] = couleur
+            res["reserve"] -= 1
+        elif plateau["cases"][peindre_case]["couleur"] != couleur:
+            if res["reserve"] >= 2:
+                res["nb_repeintes"] += 1
+                res["cout"] += 2
+                plateau["cases"][peindre_case]["couleur"] = couleur
+                res["reserve"] -= 2
+            else:
+                res["reserve"] = 0
+        else:
+            res["cout"] += 1
+            res["reserve"] -= 1
+
     for i in range(distance_max):
-
+        # si on essaye de peindre en dehors du plateau
         if not est_sur_plateau(plateau, peindre_case):
+            res.pop("reserve")
             return res
 
-        if reserve == 0:
+        # si on essaye de peindre alors qu'on a plus de reserve
+        if res["reserve"] <= 0:
+            res.pop("reserve")
             return res
 
+        # si on essaye de peindre un mur
         if case.est_mur(plateau["cases"][peindre_case]):
             if not peindre_murs:
+                res.pop("reserve")
                 return res
 
             elif peindre_murs and reserve > 0:
-                plateau["cases"][peindre_case]["couleur"] = couleur.lower()
-                res["nb_murs_repeints"] += 1
-                res["cout"] += 1
-                res["nb_repeintes"] += 1
-                reserve -= 1
-                return res
+                essaye_couleur(plateau, peindre_case, couleur.lower(), mur=True)
 
+        # si on essaye de peindre alors qu'il y a un ou plusieurs autres joueurs
         elif case.get_joueurs(plateau["cases"][peindre_case]):
             res["joueurs_touches"].add(plateau["cases"][peindre_case]["joueurs_presents"])
-            # if joueur.get_reserve(plateau["cases"][peindre_case]["joueurs_presents"][0]) > 5:
-                # joueur.modifie_reserve(plateau["cases"][peindre_case]["joueurs"], -5)
+
+            # si le joueur n'est pas nous
             if case.get_joueurs(plateau["cases"][peindre_case]) != couleur:
-                reserve += 5
-            # else
-                # reserve += joueur.get_reserve(plateau["cases"][peindre_case]["joueurs"])
-                # joueur.modifie_reserve(plateau["cases"][peindre_case]["joueurs"], -joueur.get_reserve(plateau["cases"][peindre_case]["joueurs"]))
-                if plateau["cases"][peindre_case]["couleur"] != couleur:
-                    res["nb_repeintes"] += 1
-                    res["cout"] += 2
-                    plateau["cases"][peindre_case]["couleur"] = couleur
-                    reserve -= 2
-            else:
-                res["nb_repeintes"] += 1
-                res["cout"] += 1
-                plateau["cases"][peindre_case]["couleur"] = couleur
-                reserve -= 1
+                res["reserve"] += 0
+                # si la case n'est pas de la bonne couleur
+                essaye_couleur(plateau, peindre_case, couleur)
+                # si la case est de la bonne couleur
 
-        elif plateau["cases"][peindre_case]["couleur"] != couleur:
-            if plateau["cases"][peindre_case]["couleur"] != couleur:
-                res["nb_repeintes"] += 1
-                res["cout"] += 2
-                plateau["cases"][peindre_case]["couleur"] = couleur
-                reserve -= 2
             else:
-                res["nb_repeintes"] += 1
-                res["cout"] += 1
-                plateau["cases"][peindre_case]["couleur"] = couleur
-                reserve -= 1
+                essaye_couleur(plateau, peindre_case, couleur)
+
+        # si on essaye de peindre une case vide
         else:
-            if plateau["cases"][peindre_case]["couleur"] != couleur:
-                res["nb_repeintes"] += 1
-                res["cout"] += 2
-                plateau["cases"][peindre_case]["couleur"] = couleur
-                reserve -= 2
+            essaye_couleur(plateau, peindre_case, couleur)
 
-
-        print(peindre_case, res)
-        print(plateau["cases"][peindre_case])
-        peindre_case = (peindre_case[0] + INC_DIRECTION[direction][0], peindre_case[0] + INC_DIRECTION[direction][1])
-    print(res)
+        peindre_case = (peindre_case[0] + INC_DIRECTION[direction][0], peindre_case[1] + INC_DIRECTION[direction][1])
+    res.pop("reserve")
     return res
