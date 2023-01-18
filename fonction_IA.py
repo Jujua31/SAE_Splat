@@ -15,10 +15,8 @@ def mur_autour_joueur(plan, ma_couleur, les_joueurs):
     Returns:
         list: une liste de direction où le joueur peut aller
     """
-    liste_joueurs = joueur.joueur_from_str(les_joueurs)
-    print(liste_joueurs)
     liste_couleur = []
-    for i in liste_joueurs.keys():
+    for i in les_joueurs.keys():
         if i == ["couleur"]:
             liste_couleur.append(i.lower)
     liste_couleur.append("#")
@@ -116,4 +114,7 @@ def direction():
     pass
 
 def get_coords_objets():
+    pass
+
+def case_vide_plus_proche():
     pass
