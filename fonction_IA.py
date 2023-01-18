@@ -48,7 +48,7 @@ def case_vide_direction(plan,pos,direction):
     Returns:
         list: une liste d'index des cases étant incolore
     """
-    distance_max = 5
+    distance_max = const.DIST_MAX
     case_vides = []
     pos2 = pos
     INC_DIRECTION = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'O': (0, -1), 'X': (0, 0)}
@@ -68,7 +68,7 @@ def case_peinte_autre_joueurs_direction(plan,pos,direction,ma_couleur):
     Returns:
         list: une liste d'index des cases étant peintes par des joueurs autres que nous même
     """
-    distance_max = 5
+    distance_max = const.DIST_MAX
     case_joueurs = []
     pos2 = pos
     INC_DIRECTION = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'O': (0, -1), 'X': (0, 0)}
@@ -104,17 +104,170 @@ def nb_cases_possibles_a_peindre_direction(plan,pos,reserve,direction,ma_couleur
                 nombre_case = i
     return nombre_case
 
-def dico_reserve(plan,les_joueurs):
-    pass
+def best_direction_shoot(plan,pos,ma_couleur,reserve):
+    best_nb = 0
+    best_dir = 0
+    directions = ["N","S","E","O"]
+    for direction in directions:
+        if nb_cases_possibles_a_peindre_direction(plan,pos,reserve,direction,ma_couleur) > best_nb:
+            best_nb = nb_cases_possibles_a_peindre_direction(plan,pos,reserve,direction,ma_couleur)
+            best_dir = dir
+    return best_dir
 
-def joueurs_plus_proche():
-    pass
+def fabrique_le_calque(le_plateau, pos_depart):
+    ''' Fabrique le calque du plateau en utilisant le principe de l'inondation.
+    Args:
+        le_plateau (dict): le plateau comme indiqué dans le sujet
+        pos_depart (tuple): la position de départ du joueur
+    Returns:    
+        dict: le calque du plateau
+    '''
+    calque = le_plateau.copy()
+    calque[pos_depart] = 0
+    pile = [pos_depart]
+    while pile:
+        pos = pile.pop()
+        for voisin in calque.directions_possibles(le_plateau, pos).keys():
+            voisin = (pos_depart[0] + plateau.INC_DIRECTION[voisin][0], pos_depart[1] + plateau.INC_DIRECTION[voisin][1])
+            print(voisin)
+            if plateau.est_sur_plateau(le_plateau, voisin) and not le_plateau["cases"][voisin]["mur"]:
+                calque[voisin] = calque[pos] + 1
+                pile.append(voisin)
+    return calque
 
-def direction():
-    pass
 
-def get_coords_objets():
-    pass
+def fabrique_chemin(le_plateau,pos_depart,pos_arrivee):
+    """Renvoie le plus court chemin entre pos_depart et pos_arrivee
+    
+    Args:
+        le_plateau(dict) : un plateau de jeu
+        position_depart (tuple) : un tuple de deux entiers de la forme (no_ligne, no_colonne)
+        position_arrivee (tuple) : tuple de deux entiers de la forme (no_ligne,no_colonne)
 
-def case_vide_plus_proche():
-    pass
+    Returns:
+        list : Une liste de positions entre position_arrivee et position_depart qui représente le plus_court chemin entre les deux positions    
+    
+    """
+    calque = fabrique_le_calque(le_plateau,pos_depart)
+    chemin = [pos_arrivee]
+    pos = pos_arrivee
+    while pos != pos_depart:
+        for voisin in plateau.directions_possibles(le_plateau, pos):
+            if voisin in calque and calque[voisin] < calque[pos]:
+                chemin.append(voisin)
+                pos = voisin
+                break
+    chemin.reverse()
+    return chemin
+
+
+def get_case_vide_plus_proche(plan,pos):
+    ''' Trouve la case vide la plus proche de la position pos et renvoie le chemin pour y aller.
+    Args:
+        plan (dict): le plan du plateau comme indiqué dans le sujet
+        pos (tuple): la position du joueur
+    Returns:
+        list: le chemin pour aller à la case vide la plus proche
+    '''
+    calque = fabrique_le_calque(plan,pos)
+    case_vide = []
+    for case in calque:
+        if plan["cases"][case]["couleur"] == ' ':
+            case_vide.append(case)
+    case_vide_plus_proche = case_vide[0]
+    for case in case_vide:
+        if calque[case] < calque[case_vide_plus_proche]:
+            case_vide_plus_proche = case
+    return fabrique_chemin(plan,pos,case_vide_plus_proche)
+
+
+def get_case_autre_couleur_plus_proche(plan,pos,ma_couleur):
+    ''' Trouve la case d'une couleur différente de notre couleur la plus proche de la position pos et renvoie le chemin pour y aller.
+    Args:
+        plan (dict): le plan du plateau comme indiqué dans le sujet
+        pos (tuple): la position du joueur
+    Returns:
+        list: le chemin pour aller à la case vide la plus proche
+    '''
+    calque = fabrique_le_calque(plan,pos)
+    case_autre_couleur = []
+    for case in calque:
+        if plan["cases"][case]["couleur"] != ma_couleur:
+            case_autre_couleur.append(case)
+    case_vide_plus_proche = case_autre_couleur[0]
+    for case in case_autre_couleur:
+        if calque[case] < calque[case_vide_plus_proche]:
+            case_vide_plus_proche = case
+    return fabrique_chemin(plan,pos,case_vide_plus_proche)
+
+
+def get_case_objet_plus_proche_donne(plan, pos, objet):
+    ''' Trouve la case avec l'objet le plus proche de la position pos et renvoie le chemin pour y aller.
+    Args:
+        plan (dict): le plan du plateau comme indiqué dans le sujet
+        pos (tuple): la position du joueur
+        objet (int): l'objet que l'on veut trouver
+    Returns:
+        list: le chemin pour aller à la case avec l'objet le plus proche
+    '''
+    calque = fabrique_le_calque(plan,pos)
+    case_objet = []
+    for case in calque:
+        if plan["cases"][case]["objet"] == objet:
+            case_objet.append(case)
+    case_objet_plus_proche = case_objet[0]
+    for case in case_objet:
+        if calque[case] < calque[case_objet_plus_proche]:
+            case_objet_plus_proche = case
+    return fabrique_chemin(plan,pos,case_objet_plus_proche)
+
+def direction (pos1,pos2):
+    ''' Renvoie la direction à prendre pour aller de pos1 à pos2 si pos1 est à côté de pos2.
+    Args:
+        pos1 (tuple): la position de départ
+        pos2 (tuple): la position d'arrivée
+    Returns:
+        str: la direction à prendre
+    '''
+    if pos1[0] == pos2[0]:
+        if pos1[1] < pos2[1]:
+            return "E"
+        else:
+            return "O"
+    else:
+        if pos1[0] < pos2[0]:
+            return "S"
+        else:
+            return "N"
+        
+def aligne_pos_avec_direction(plan, pos1, pos2):
+    """"Renvoie un bouléen qui indique si pos1 et pos2 sont alignés et si oui dans quelle direction.
+    Args:
+        plan (dict): le plan du plateau comme indiqué dans le sujet
+        pos1 (tuple): la position de départ
+        pos2 (tuple): la position d'arrivée
+    Returns:
+        bool: True si pos1 et pos2 sont alignés, False sinon
+        str: la direction dans laquelle pos1 et pos2 sont alignés
+    """
+    if pos1[0] == pos2[0]:
+        if pos1[1] < pos2[1]:
+            direction = "E"
+        else:
+            direction = "O"
+        for i in range(pos1[1]+1,pos2[1]):
+            if plan["cases"][(pos1[0],i)]["couleur"] != ' ':
+                return False, None
+        return True, direction
+    elif pos1[1] == pos2[1]:
+        if pos1[0] < pos2[0]:
+            direction = "S"
+        else:
+            direction = "N"
+        for i in range(pos1[0]+1,pos2[0]):
+            if plan["cases"][(i,pos1[1])]["couleur"] != ' ':
+                return False, None
+        return True, direction
+    else:
+        return False, None
+

@@ -38,46 +38,39 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     caracteristique_dic = {"duree_act":caracteristique[0],"duree_tot":caracteristique[1],"reserve_init":caracteristique[2],
                         "duree_obj":caracteristique[3],"penalite":caracteristique[4],"bonus_touche":caracteristique[5],
                         "bonus_rechar":caracteristique[6],"bonus_objet":caracteristique[7]}
-    position = joueur.get_pos(joueur_str[ma_couleur])
-    # direction_mouvement = str(random.choice("NSEO"))
-    # print(IA.mur_autour_joueur(le_plan,ma_couleur,donnees_joueurs))
-    # direction_mouvement = str(random.choice(IA.mur_autour_joueur(plan,ma_couleur,les_joueurs)))
-    # best_nb_case = 0
-    # best_direction = 'X'
-    # for direction_test in "NSEO":
-    #     if IA.nb_cases_possibles_a_peindre_direction(plan,joueur.get_pos(ma_couleur),joueur.get_reserve(ma_couleur),\
-    #         direction_test,ma_couleur) > best_nb_case:
-    #         best_nb_case = IA.nb_cases_possibles_a_peindre_direction(plan,joueur.get_pos(ma_couleur),joueur.get_reserve(ma_couleur),\
-    #             direction_test,ma_couleur):
-    #         best_direction = direction_test
-    # try:
+
     #Initialisation des variables utilisées dans le programme
-    the_print = "try"
     modif = False
     dic_direction = None
     liste_direction_not_mur = []
+    position = joueur.get_pos(joueur_str[ma_couleur])
     for dir in (plateau.directions_possibles(le_plan, position)).keys():
         liste_direction_not_mur.append(dir)
+    reserve = joueur.get_reserve(joueur_str[ma_couleur])
     #Definition des mouvements initiaux en aléatoire
     direction_mouvement = str(random.choice("NSEO"))
     direction_tir = str(random.choice("XNSEO"))
+    
+    #On regarde si notre réserve est négative et si on as aucune case restante
+    if reserve <= 0 and plateau.surfaces_peintes(le_plan, len(joueur_str))[ma_couleur] == 0:
+        #Inserer programme pour aller chercher bidon et tirer pour revenir dans la game!!!
+        return direction_tir + direction_mouvement 
+    
     #Si la reserve est basse, on se déplace sur nos cases et on ne tire pas
-    if joueur.get_reserve(joueur_str[ma_couleur]) <= 5:
+    elif reserve <= 5:
         dic_direction = plateau.directions_possibles(le_plan, position)
         for (direction1, valeur_case) in dic_direction.items():
             #On vérife qu'une case adjacente soit de notre couleur
             if valeur_case == joueur_str[ma_couleur]:
                 direction_mouvement = direction1
-                the_print = "Low_reserve + bouge dans notre couleur"
             #Sinon, on bouge dans une case qui n'est pas un mur
             else:
                 direction_mouvement = random.choice(liste_direction_not_mur)
-                the_print = "Low_reserve + bouge dans autre couleur"
         return 'X' + direction_mouvement
 
 
     #Sinon, si,on tire dans une direction où la case adjacente n'est ni un mur ni de notre couleur
-    elif joueur.get_reserve(joueur_str[ma_couleur]) > 5:
+    elif reserve > 5:
         dic_direction = plateau.directions_possibles(le_plan, position)
         #On vérifie si il y a une case d'une couleur autre que la notre autour de nous
         for (direction2, valeur_case) in dic_direction.items():
@@ -86,22 +79,11 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
                 direction_tir = direction2
                 direction_mouvement = direction_tir
                 modif = True
-                the_print = "Tir dans une autre couleur"
-            #Si il n'y en as pas, alors on tir et bouge dans une case qui n'est pas un mur
+            #Si il n'y en as pas, alors on tir et vers la case la plus proche qui n'est pas de notre couleur
         if not modif:
-            direction_mouvement = random.choice(liste_direction_not_mur)
-            direction_tir = direction_mouvement
-            the_print = "Tir 'random' dans une direction qui n'est pas un mur"
-    print(the_print,dic_direction, ma_couleur)
+            direction_tir = str(IA.direction(position,IA.get_case_autre_couleur_plus_proche(le_plan,position,ma_couleur)))
+            direction_mouvement = direction_tir
     return direction_tir + direction_mouvement
-
-    #Si jamais on arrive à un crash, on génère un coup aléatoire pour éviter un time-out
-    # except:
-    #     dic_direction = plateau.directions_possibles(le_plan, position)
-    #     direction_mouvement = random.choice(dic_direction)
-    #     direction_tir = random.choice(dic_direction)
-    #     print("EXCEPT !!!")
-    #     return direction_tir + direction_mouvement
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()  
