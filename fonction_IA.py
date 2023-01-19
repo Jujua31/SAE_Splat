@@ -121,13 +121,14 @@ def fabrique_le_calque(le_plateau, pos_depart):
     Returns:    
         dict: le calque du plateau
     '''
+    INC_DIRECTION = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'O': (0, -1)}
     calque = {}
     calque[pos_depart] = 0
     pile = [pos_depart]
     while pile:
         pos = pile.pop()
         for voisin in plateau.directions_possibles(le_plateau, pos).keys():
-            voisin = (pos[0] + plateau.INC_DIRECTION[voisin][0], pos[1] + plateau.INC_DIRECTION[voisin][1])
+            voisin = (pos[0] + INC_DIRECTION[voisin][0], pos[1] + INC_DIRECTION[voisin][1])
             if plateau.est_sur_plateau(le_plateau, voisin) and not le_plateau["cases"][voisin]["mur"] and voisin not in calque.keys():
                 calque[voisin] = calque[pos] + 1
                 pile.append(voisin)
@@ -147,12 +148,13 @@ def fabrique_chemin(le_plateau,pos_depart,pos_arrivee):
         list : Une liste de positions entre position_arrivee et position_depart qui représente le plus_court chemin entre les deux positions    
     
     """
+    INC_DIRECTION = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'O': (0, -1)}
     calque = fabrique_le_calque(le_plateau,pos_depart)
     chemin = [pos_arrivee]
     pos = pos_arrivee
     while pos != pos_depart:
         for voisin in plateau.directions_possibles(le_plateau, pos):
-            voisin = (pos[0] + plateau.INC_DIRECTION[voisin][0], pos[1] + plateau.INC_DIRECTION[voisin][1])
+            voisin = (pos[0] + INC_DIRECTION[voisin][0], pos[1] + INC_DIRECTION[voisin][1])
             if voisin in calque and calque[voisin] < calque[pos]:
                 chemin.append(voisin)
                 pos = voisin
@@ -216,6 +218,8 @@ def get_ma_couleur_plus_proche(plan,pos,ma_couleur):
     for case in calque.keys():
         if plan["cases"][case]["couleur"] == ma_couleur:
             case_autre_couleur.append(case)
+    if case_autre_couleur == []:
+        return None
     case_vide_plus_proche = case_autre_couleur[0]
     for case in case_autre_couleur:
         if calque[case] < calque[case_vide_plus_proche]:
@@ -307,9 +311,10 @@ def possible_a_peindre(plan, pos, ma_couleur, direction, reserve):
     Returns:
         bool: True si on peut peindre dans la direction donnée avec une distance maximal(reserve), False sinon
     """
+    INC_DIRECTION = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'O': (0, -1), 'X': (0, 0)}
     reserve = nb_cases_possibles_a_peindre_direction(plan,pos,reserve,direction,ma_couleur)
     for i in range(1,reserve+1):
-        pos = (pos[0] + plateau.INC_DIRECTION[direction][0], pos[1] + plateau.INC_DIRECTION[direction][1])
+        pos = (pos[0] + INC_DIRECTION[direction][0], pos[1] + INC_DIRECTION[direction][1])
         if plateau.est_sur_plateau(plan,pos) and plan["cases"][(pos)]["couleur"] != ma_couleur and not plan["cases"][pos]["mur"]:
             return True
     return False

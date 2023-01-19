@@ -48,35 +48,60 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
         liste_direction_not_mur.append(dir)
     reserve = joueur.get_reserve(joueur_str[ma_couleur])
     #Definition des mouvements initiaux en aléatoire
-    direction_mouvement = str(random.choice("NSEO"))
-    direction_tir = str(random.choice("XNSEO"))
+    direction_mouvement = str(random.choice(liste_direction_not_mur))
+    direction_tir = str(random.choice(liste_direction_not_mur))
     
     if reserve < 0:
-        if plateau.surfaces_peintes(le_plan,len(joueur_str))[ma_couleur] == 0:
+        direction_tir = "X"
+        if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON) != None:
+                if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1] != position:
+                    if len(IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)) == 2:
+                        direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
+                        direction_tir = random.choice(liste_direction_not_mur)
+        if (plateau.surfaces_peintes(le_plan,len(joueur_str)))[ma_couleur] <= 0:
+            print("jai plus d'énergie", direction_mouvement)
             if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON) != None:
+                print("jai plus de case")
                 if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1] != position:
                     direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
-                else:
-                    direction_mouvement = random.choice(liste_direction_not_mur)
-            else:
-                direction_mouvement = random.choice(liste_direction_not_mur)
-        elif len(IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur)) > 2:
-            direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
-        else:
-            direction_mouvement = str(IA.direction(position,IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur)[1]))
-            
+                print("OMG 1 BIDON?????!!!! J V 2 SE PAS")
+        
+        elif IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur) != None:
+            if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON) != None:
+                if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1] != position:
+                    if len(IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]) < 5 :
+                        direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
+        
     #Si la reserve est basse, on se déplace sur nos cases et on ne tire pas
-    if reserve <= 5:
+    elif reserve <= 5:
+        # dic_nb_case_possible_peindre = {}
+        # for direction in "NSEO":
+        #     dic_nb_case_possible_peindre[direction] = IA.nb_cases_possibles_a_peindre_direction(le_plan,position,reserve,direction,ma_couleur) == 0:
+        #     if dic_nb_case_possible != 0:
+        #         modif = True
+        # if modif = False:
+        direction_tir = "X"
         dic_direction = plateau.directions_possibles(le_plan, position)
         for (direction1, valeur_case) in dic_direction.items():
             #On vérife qu'une case adjacente soit de notre couleur
-            if valeur_case == joueur_str[ma_couleur]:
+            if valeur_case == ma_couleur:
                 direction_mouvement = direction1
-            #Sinon, on bouge dans une case qui n'est pas un mur
-            else:
-                direction_mouvement = random.choice(liste_direction_not_mur)
-        return 'X' + direction_mouvement
-
+            #Sinon, on bouge vers la case de notre couleur la plus proche
+            elif IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur) != None:
+                if len(IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur)) > 1:
+                    print(IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur))
+                    direction_mouvement = IA.direction(position,IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur)[1])
+            
+        print("Je suis low !", direction_mouvement)
+        # else:
+        #   best_dir = None
+        #   best_nb = 0
+        #   for (direction4, val) in dic_nb_case_possible_peindre.items():
+        #       if val > best_nb:
+        #           best_nb = val
+        #           best_dir = direction4
+        #   direction_tir = best_dir
+        #   direction_mouvement = best_tir
 
     #Sinon, si,on tire dans une direction où la case adjacente n'est ni un mur ni de notre couleur
     elif reserve > 5:
@@ -101,6 +126,7 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
             else:
                 direction_tir = random.choice(liste_direction_not_mur)
             direction_mouvement = direction_tir
+        print("Je suis normal !", direction_mouvement, direction_tir)
     return direction_tir + direction_mouvement
 
 
