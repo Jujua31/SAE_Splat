@@ -238,7 +238,7 @@ def get_case_objet_plus_proche_donne(plan, pos, objet):
     '''
     calque = fabrique_le_calque(plan,pos)
     case_objet = []
-    for case in calque:
+    for case in calque.keys():
         if plan["cases"][case]["objet"] == objet:
             case_objet.append(case)
     if case_objet == []:
@@ -324,7 +324,9 @@ def test_calque():
     with open("plans/plan1.txt") as fic:
             plan1 = fic.read()
     le_plateau = plateau.Plateau(plan1)
-    print(le_plateau["cases"][(1,2)]["couleur"])
-    print(get_ma_couleur_plus_proche(le_plateau,(0,1),"A"))
+    # placer l'objer 4 dans la case (1,2)
+    le_plateau["cases"][(2,3)]["objet"] = 4
+    print(le_plateau["cases"][(3,3)]["couleur"])
+    print(get_case_objet_plus_proche_donne(le_plateau,(0,1),const.BIDON))
     print(direction((1,1),(1,0)))
-#test_calque()
+test_calque()

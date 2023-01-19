@@ -58,13 +58,13 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
                     if len(IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)) == 2:
                         direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
                         direction_tir = random.choice(liste_direction_not_mur)
-        if (plateau.surfaces_peintes(le_plan,len(joueur_str)))[ma_couleur] <= 0:
+        elif (plateau.surfaces_peintes(le_plan,len(joueur_str)))[ma_couleur] <= 0:
             print("jai plus d'énergie", direction_mouvement)
             if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON) != None:
                 print("jai plus de case")
                 if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1] != position:
                     direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
-                print("OMG 1 BIDON?????!!!! J V 2 SE PAS")
+                    print("OMG 1 BIDON?????!!!! J V 2 SE PAS")
         
         elif IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur) != None:
             if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON) != None:
