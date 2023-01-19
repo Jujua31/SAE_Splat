@@ -16,7 +16,7 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
         Le deuxième caractère est parmi SNOE indiquant la direction où se déplacer.
 
     Args:
-        ma_couleur (str): un caractère en majuscule indiquant la couleur du jeur
+        ma_couleur (str): un caractère en majuscule indiquant la couleur du joueur
         carac_jeu (str): une chaine de caractères contenant les caractéristiques
                                 de la partie séparées par des ;
             duree_act;duree_tot;reserve_init;duree_obj;penalite;bonus_touche;bonus_rechar;bonus_objet           
@@ -51,13 +51,22 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     direction_mouvement = str(random.choice("NSEO"))
     direction_tir = str(random.choice("XNSEO"))
     
-    #On regarde si notre réserve est négative et si on as aucune case restante
-    if reserve <= 0 and plateau.surfaces_peintes(le_plan, len(joueur_str))[ma_couleur] == 0:
-        #Inserer programme pour aller chercher bidon et tirer pour revenir dans la game!!!
-        return direction_tir + direction_mouvement 
-    
+    if reserve < 0:
+        if plateau.surfaces_peintes(le_plan,len(joueur_str))[ma_couleur] == 0:
+            if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON) != None:
+                if IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1] != position:
+                    direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
+                else:
+                    direction_mouvement = random.choice(liste_direction_not_mur)
+            else:
+                direction_mouvement = random.choice(liste_direction_not_mur)
+        elif len(IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur)) > 2:
+            direction_mouvement = str(IA.direction(position,IA.get_case_objet_plus_proche_donne(le_plan,position,const.BIDON)[1]))
+        else:
+            direction_mouvement = str(IA.direction(position,IA.get_ma_couleur_plus_proche(le_plan,position,ma_couleur)[1]))
+            
     #Si la reserve est basse, on se déplace sur nos cases et on ne tire pas
-    elif reserve <= 5:
+    if reserve <= 5:
         dic_direction = plateau.directions_possibles(le_plan, position)
         for (direction1, valeur_case) in dic_direction.items():
             #On vérife qu'une case adjacente soit de notre couleur
@@ -79,11 +88,22 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
                 direction_tir = direction2
                 direction_mouvement = direction_tir
                 modif = True
-            #Si il n'y en as pas, alors on tir et vers la case la plus proche qui n'est pas de notre couleur
+        #Si il n'y en as pas, alors on tir et on bouge vers la case la plus proche qui n'est pas de notre couleur
         if not modif:
-            direction_tir = str(IA.direction(position,IA.get_case_autre_couleur_plus_proche(le_plan,position,ma_couleur)))
+            if IA.get_case_autre_couleur_plus_proche(le_plan,position,ma_couleur) != None:
+                if position != IA.get_case_autre_couleur_plus_proche(le_plan,position,ma_couleur)[1]:
+                    if IA.possible_a_peindre(le_plan,position,ma_couleur,direction_tir,reserve):
+                        direction_tir = IA.direction(position,IA.get_case_autre_couleur_plus_proche(le_plan,position,ma_couleur)[1])
+                    else:
+                        direction_tir = "X"
+                else:
+                    direction_tir = random.choice(liste_direction_not_mur)
+            else:
+                direction_tir = random.choice(liste_direction_not_mur)
             direction_mouvement = direction_tir
     return direction_tir + direction_mouvement
+
+
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()  

@@ -318,7 +318,7 @@ if __name__ == '__main__':
     # parser.add_argument("--empl_tournoi", dest="empl_tournoi", help="emplacement du tournoi", type=str, default='.')
     parser.add_argument("--nom_partie", dest="nom_partie", help="nom de la partie", type=str, default='score.csv')
     parser.add_argument("--duree", dest="duree", help="nombre de tours de la partie", type=int, default=200)
-    parser.add_argument("--map", dest="map", help="fichier contenant la map", type=str, default='cartes/carte.txt')
+    parser.add_argument("--map", dest="map", help="fichier contenant la map", type=str, default='cartes/carte2.txt')
     # parser.add_argument('joueurs', metavar='joueur', type=str, nargs='+', help='les joueurs')
     
     args = parser.parse_args()

@@ -75,8 +75,7 @@ def case_peinte_autre_joueurs_direction(plan,pos,direction,ma_couleur):
     for index in range(distance_max):
         if plateau.est_sur_plateau(plan,pos2) and not plan["cases"][pos2]["mur"]:
             if plan["cases"][pos2]['couleur'] != ' ':
-                if plan["cases"][pos2]['couleur'] != ma_couleur:
-                    case_joueurs.append(index+1)
+                case_joueurs.append(index+1)
         pos2 = (pos2[0] + INC_DIRECTION[direction][0], pos2[1] + INC_DIRECTION[direction][1])
     return case_joueurs
 
@@ -122,17 +121,17 @@ def fabrique_le_calque(le_plateau, pos_depart):
     Returns:    
         dict: le calque du plateau
     '''
-    calque = le_plateau.copy()
+    calque = {}
     calque[pos_depart] = 0
     pile = [pos_depart]
     while pile:
         pos = pile.pop()
-        for voisin in calque.directions_possibles(le_plateau, pos).keys():
-            voisin = (pos_depart[0] + plateau.INC_DIRECTION[voisin][0], pos_depart[1] + plateau.INC_DIRECTION[voisin][1])
-            print(voisin)
-            if plateau.est_sur_plateau(le_plateau, voisin) and not le_plateau["cases"][voisin]["mur"]:
+        for voisin in plateau.directions_possibles(le_plateau, pos).keys():
+            voisin = (pos[0] + plateau.INC_DIRECTION[voisin][0], pos[1] + plateau.INC_DIRECTION[voisin][1])
+            if plateau.est_sur_plateau(le_plateau, voisin) and not le_plateau["cases"][voisin]["mur"] and voisin not in calque.keys():
                 calque[voisin] = calque[pos] + 1
                 pile.append(voisin)
+        #print ("test", pile, pos)
     return calque
 
 
@@ -153,6 +152,7 @@ def fabrique_chemin(le_plateau,pos_depart,pos_arrivee):
     pos = pos_arrivee
     while pos != pos_depart:
         for voisin in plateau.directions_possibles(le_plateau, pos):
+            voisin = (pos[0] + plateau.INC_DIRECTION[voisin][0], pos[1] + plateau.INC_DIRECTION[voisin][1])
             if voisin in calque and calque[voisin] < calque[pos]:
                 chemin.append(voisin)
                 pos = voisin
@@ -191,8 +191,30 @@ def get_case_autre_couleur_plus_proche(plan,pos,ma_couleur):
     '''
     calque = fabrique_le_calque(plan,pos)
     case_autre_couleur = []
-    for case in calque:
+    for case in calque.keys():
         if plan["cases"][case]["couleur"] != ma_couleur:
+            case_autre_couleur.append(case)
+    if case_autre_couleur == []:
+        return None
+    case_vide_plus_proche = case_autre_couleur[0]
+    for case in case_autre_couleur:
+        if calque[case] < calque[case_vide_plus_proche]:
+            case_vide_plus_proche = case
+    return fabrique_chemin(plan,pos,case_vide_plus_proche)
+
+
+def get_ma_couleur_plus_proche(plan,pos,ma_couleur):
+    ''' Trouve la case de notre couleur la plus proche de la position pos et renvoie le chemin pour y aller.
+    Args:
+        plan (dict): le plan du plateau comme indiqué dans le sujet
+        pos (tuple): la position du joueur
+    Returns:
+        list: le chemin pour aller à la case vide la plus proche
+    '''
+    calque = fabrique_le_calque(plan,pos)
+    case_autre_couleur = []
+    for case in calque.keys():
+        if plan["cases"][case]["couleur"] == ma_couleur:
             case_autre_couleur.append(case)
     case_vide_plus_proche = case_autre_couleur[0]
     for case in case_autre_couleur:
@@ -215,6 +237,8 @@ def get_case_objet_plus_proche_donne(plan, pos, objet):
     for case in calque:
         if plan["cases"][case]["objet"] == objet:
             case_objet.append(case)
+    if case_objet == []:
+        return None
     case_objet_plus_proche = case_objet[0]
     for case in case_objet:
         if calque[case] < calque[case_objet_plus_proche]:
@@ -271,3 +295,31 @@ def aligne_pos_avec_direction(plan, pos1, pos2):
     else:
         return False, None
 
+
+def possible_a_peindre(plan, pos, ma_couleur, direction, reserve):
+    """Renvoie un bouléen qui indique si on peut peindre dans la direction donnée avec une distance maximal(reserve).
+    Args:
+        plan (dict): le plan du plateau comme indiqué dans le sujet
+        pos (tuple): la position de départ
+        ma_couleur (str): la couleur du joueur
+        direction (str): la direction dans laquelle on veut peindre
+        reserve (int): la distance maximal que l'on peut peindre
+    Returns:
+        bool: True si on peut peindre dans la direction donnée avec une distance maximal(reserve), False sinon
+    """
+    reserve = nb_cases_possibles_a_peindre_direction(plan,pos,reserve,direction,ma_couleur)
+    for i in range(1,reserve+1):
+        pos = (pos[0] + plateau.INC_DIRECTION[direction][0], pos[1] + plateau.INC_DIRECTION[direction][1])
+        if plateau.est_sur_plateau(plan,pos) and plan["cases"][(pos)]["couleur"] != ma_couleur and not plan["cases"][pos]["mur"]:
+            return True
+    return False
+
+
+def test_calque():
+    with open("plans/plan1.txt") as fic:
+            plan1 = fic.read()
+    le_plateau = plateau.Plateau(plan1)
+    print(le_plateau["cases"][(1,2)]["couleur"])
+    print(get_ma_couleur_plus_proche(le_plateau,(0,1),"A"))
+    print(direction((1,1),(1,0)))
+#test_calque()
